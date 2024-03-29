@@ -1,7 +1,9 @@
 ﻿namespace DnDEZBackEnd.Models
 {
-    public class CharacterDTO
+    public class CharacterPostDTO
     {
+        public int? UserId { get; set; }
+
         public string Name { get; set; } = null!;
 
         public string Race { get; set; } = null!;
@@ -10,6 +12,7 @@
 
         public int Level { get; set; }
 
-        public virtual List<CharAbilityScoreDTO> CharAbilityScores { get; set; }
+        public CharAbilityScoreDTO[] CharAbilityScores { get; set; }
+
     }
 }

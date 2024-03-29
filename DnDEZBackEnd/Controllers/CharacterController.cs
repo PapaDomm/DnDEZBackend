@@ -30,8 +30,9 @@ namespace DnDEZBackEnd.Controllers
         {
             return new CharAbilityScoreDTO
             {
-                Index = a.Index,
-                Value = a.Value,
+                index = a.Index,
+                value = a.Value,
+                racialBonus = a.RacialBonus
             };
         }
 
@@ -72,6 +73,49 @@ namespace DnDEZBackEnd.Controllers
             dbContext.SaveChanges();
 
             return Ok(convertCharacterDTO(c));
+        }
+
+        [HttpPost]
+        public IActionResult createCharacter([FromForm] CharacterPostDTO c)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            Character newCharacter = new Character();
+
+            newCharacter.CharacterId = 0;
+            newCharacter.UserId = c.UserId;
+            newCharacter.Name = c.Name;
+            newCharacter.Race = c.Race;
+            newCharacter.Class = c.Class;
+            newCharacter.Level = c.Level;
+
+            
+
+            dbContext.Characters.Add(newCharacter);
+            dbContext.SaveChanges();
+
+            Character addCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == newCharacter.CharacterId);
+
+            foreach (CharAbilityScoreDTO abi in c.CharAbilityScores)
+            {
+                CharAbilityScore newAbi = new CharAbilityScore();
+                newAbi.CharacterId = addCharacter.CharacterId;
+                newAbi.Index = abi.index;
+                newAbi.Value = abi.value;
+                newAbi.RacialBonus = abi.racialBonus;
+
+                dbContext.CharAbilityScores.Add(newAbi);
+                dbContext.SaveChanges();
+            }
+
+            //dbContext.Characters.Update(addCharacter);
+            //dbContext.SaveChanges();
+
+            return Ok();
+ 
         }
     }
 }
