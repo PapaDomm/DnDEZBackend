@@ -12,7 +12,7 @@
 
         public int Level { get; set; }
 
-        public CharAbilityScoreDTO[] CharAbilityScores { get; set; }
+        public List<CharAbilityScoreDTO> CharAbilityScores { get; set; }
 
     }
 }

@@ -27,7 +27,7 @@ namespace DnDEZBackEnd.Models
 
             return result;
         }
-        public static List<BasicRace> getAllRaces()
+        public static BasicRace getAllRaces()
         {
             //Adjust
             //Setup
@@ -45,7 +45,7 @@ namespace DnDEZBackEnd.Models
             //Adjust
             //Convert to C#
             //Install Newtonsoft.Json
-            List<BasicRace> result = JsonConvert.DeserializeObject<List<BasicRace>>(JSON);
+            BasicRace result = JsonConvert.DeserializeObject<BasicRace>(JSON);
 
             return result;
         }

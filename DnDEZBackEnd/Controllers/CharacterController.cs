@@ -30,9 +30,9 @@ namespace DnDEZBackEnd.Controllers
         {
             return new CharAbilityScoreDTO
             {
-                index = a.Index,
-                value = a.Value,
-                racialBonus = a.RacialBonus
+                Index = a.Index,
+                Value = a.Value,
+                RacialBonus = a.RacialBonus
             };
         }
 
@@ -103,16 +103,13 @@ namespace DnDEZBackEnd.Controllers
             {
                 CharAbilityScore newAbi = new CharAbilityScore();
                 newAbi.CharacterId = addCharacter.CharacterId;
-                newAbi.Index = abi.index;
-                newAbi.Value = abi.value;
-                newAbi.RacialBonus = abi.racialBonus;
+                newAbi.Index = abi.Index;
+                newAbi.Value = abi.Value;
+                newAbi.RacialBonus = abi.RacialBonus;
 
                 dbContext.CharAbilityScores.Add(newAbi);
                 dbContext.SaveChanges();
             }
-
-            //dbContext.Characters.Update(addCharacter);
-            //dbContext.SaveChanges();
 
             return Ok();
  

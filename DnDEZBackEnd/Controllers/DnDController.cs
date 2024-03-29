@@ -13,8 +13,13 @@ namespace DnDEZBackEnd.Controllers
         [HttpGet]
         public IActionResult getRaceList()
         {
-            List<BasicRace> result = DnDRaceDAL.getAllRaces().ToList();
-            return Ok(result);
+            List<Result> result = DnDRaceDAL.getAllRaces().Results.ToList();
+            List<Race> result2 = new List<Race>();
+            foreach(Result r in result)
+            {
+                result2.Add(DnDRaceDAL.getRace(r.Index)); 
+            }
+            return Ok(result2);
         }
     }
 }

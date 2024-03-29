@@ -2,11 +2,11 @@
 {
     public class CharAbilityScoreDTO
     {
-        public string index { get; set; } = null!;
+        public string Index { get; set; } = null!;
 
-        public int value { get; set; }
+        public int Value { get; set; }
 
-        public bool? racialBonus { get; set; }
+        public bool? RacialBonus { get; set; }
 
     }
 }
