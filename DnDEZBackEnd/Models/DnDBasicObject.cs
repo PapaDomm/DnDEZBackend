@@ -1,6 +1,6 @@
 ﻿namespace DnDEZBackEnd.Models
 {
-    public partial class BasicRace
+    public partial class DnDBasicObject
     {
         public long Count { get; set; }
         public List<Result> Results { get; set; }
