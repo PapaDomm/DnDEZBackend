@@ -3,7 +3,9 @@
 namespace DnDEZBackEnd.Models
 {
     public class CharacterDTO
-    {
+    { 
+        public int? UserId { get; set; }
+        public int CharacterId { get; set; }
         public string Name { get; set; } = null!;
 
         public string Race { get; set; } = null!;

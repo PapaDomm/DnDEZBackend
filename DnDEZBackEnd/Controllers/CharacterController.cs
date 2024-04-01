@@ -23,6 +23,8 @@ namespace DnDEZBackEnd.Controllers
         {
             return new CharacterDTO
             {
+                UserId = c.UserId,
+                CharacterId = c.CharacterId,
                 Name = c.Name,
                 Race = c.Race,
                 Class = c.Class,
@@ -34,7 +36,7 @@ namespace DnDEZBackEnd.Controllers
 
         static ImageDTO convertImageDTO(Image i)
         {
-            if(i == null)
+            if (i == null)
             {
                 return null;
             }
@@ -56,7 +58,6 @@ namespace DnDEZBackEnd.Controllers
             };
         }
 
-
         [HttpGet]
         public IActionResult getAllUserCharacters(int userId)
         {
@@ -66,35 +67,16 @@ namespace DnDEZBackEnd.Controllers
             return Ok(result);
         }
 
-        //[HttpGet("Race")]
-        //public async Task<IActionResult> getCharactersWRace(string race, int charId)
-        //{
-        //    Character c = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == charId);
-
-        //    Race r = await DnDRaceDAL.getRace(race, DnDRaceDAL.dndClient);
-
-        //    if (c.Race == r.index && c.CharAbilityScores.Any(a => a.RacialBonus == true))
-        //    {
-        //        return Ok(convertCharacterDTO(c));
-        //    }
-
-        //    if (c.Race != r.index && c.CharAbilityScores.Any(a => a.RacialBonus == true))
-        //    {
-        //        c = await statAdjuster.abilityRaceDecrease(c);
-        //    }
-
-        //    if ((c.Race != r.index && !c.CharAbilityScores.Any(a => a.RacialBonus == true)) || (c.Race == r.index && !c.CharAbilityScores.Any(a => a.RacialBonus == true)))
-        //    {
-        //        c = statAdjuster.abilityRaceIncrease(c, r);
-        //    }
-
-        //    c.Race = race;
-
-        //    dbContext.Characters.Update(c);
-        //    dbContext.SaveChanges();
-
-        //    return Ok(convertCharacterDTO(c));
-        //}
+        [HttpGet("{CharacterId}")]
+        public IActionResult getChar(int CharacterId)
+        {
+            Character result = dbContext.Characters.Include(i => i.Image).Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == CharacterId);
+            if(result == null)
+            {
+                return NotFound();
+            }
+            return Ok(convertCharacterDTO(result));
+        }
 
         [HttpPost]
         public IActionResult createCharacter([FromForm] CharacterPostDTO c)
@@ -106,6 +88,7 @@ namespace DnDEZBackEnd.Controllers
 
             Character newCharacter = new Character();
 
+            newCharacter.UserId = c.UserId;
             newCharacter.CharacterId = 0;
             newCharacter.UserId = c.UserId;
             newCharacter.Name = c.Name;
@@ -127,8 +110,6 @@ namespace DnDEZBackEnd.Controllers
 
             List<CharAbilityScoreDTO> newCharAbilityScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(charabilitysfromform).ToList();
 
-            
-
             dbContext.Characters.Add(newCharacter);
             dbContext.SaveChanges();
 
@@ -149,9 +130,7 @@ namespace DnDEZBackEnd.Controllers
                 }
             }
 
-
-
-            return Ok();
+            return CreatedAtAction(nameof(getChar), new {id=newCharacter.CharacterId}, convertCharacterDTO(newCharacter));
  
         }
     }

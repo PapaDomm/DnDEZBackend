@@ -1,4 +1,5 @@
 ﻿using DnDEZBackend.Models;
+using DnDEZBackend.Models.Public_Classes;
 using DnDEZBackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,8 @@ namespace DnDEZBackend.Controllers
     public class UserController : ControllerBase
     {
         private DnDezdbContext dbContext = new DnDezdbContext();
+
+        private UploadHandler uploader = new UploadHandler();
 
         static CharacterDTO convertCharacterDTO(Character c)
         {
@@ -57,7 +60,6 @@ namespace DnDEZBackend.Controllers
                 FirstName = u.FirstName,
                 LastName = u.LastName,
                 UserName = u.UserName,
-                Characters = u.Characters.Select(c => convertCharacterDTO(c)).ToList(),
                 Image = convertImageDTO(u.Image)
             };
         }
@@ -65,10 +67,92 @@ namespace DnDEZBackend.Controllers
         [HttpGet("{userId}")]
         public IActionResult getUser(int userId)
         {
-            User result = dbContext.Users.Include(i => i.Image).Include(c => c.Characters).ThenInclude(c => c.CharAbilityScores).FirstOrDefault(u => u.UserId == userId);
+            User result = dbContext.Users.Include(i => i.Image).Include(c => c.Characters).ThenInclude(i => i.Image).FirstOrDefault(u => u.UserId == userId);
+
             return Ok(convertUserDTO(result));
         }
 
+        [HttpGet("Login")]
+        public IActionResult Login(string username, string password)
+        {
+            User result = dbContext.Users.Include(i => i.Image).FirstOrDefault(u => u.UserName == username && u.Password == password);
+            if (result == null)
+            {
+                NotFound();
+            }
+            return Ok(convertUserDTO(result));
+        }
+
+        [HttpPost]
+        public IActionResult createUser([FromForm]PostUserDTO u)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            
+            User newUser = new User();
+
+            newUser.FirstName = u.FirstName;
+            newUser.LastName = u.LastName;
+            newUser.UserName = u.UserName;
+            newUser.Password = u.Password;
+
+            if (u.Image != null) {
+                Image newImage = uploader.getImage(u.Image, "Users");
+                if (newImage != null) 
+                {
+                    newUser.ImageId = newImage.ImageId;
+                    newUser.Image = dbContext.Images.Find(newUser.ImageId);
+                }
+            }
+
+            dbContext.Users.Add(newUser);
+            dbContext.SaveChanges();
+
+            return CreatedAtAction(nameof(getUser), new
+            {
+                id = newUser.UserId
+            }, convertUserDTO(newUser));   
+
+        }
+
+        [HttpPut]
+        public IActionResult updateUser([FromForm]putUserDTO u, int userId)
+        {
+            User updateUser = dbContext.Users.Find(userId);
+
+            if(updateUser == null)
+            {
+                return NoContent();
+            }
+            if (u.FirstName != null)
+            {
+                updateUser.FirstName = u.FirstName;
+            }
+            if (u.LastName != null)
+            {
+                updateUser.LastName = u.LastName;
+            }
+            if (u.UserName != null)
+            {
+                updateUser.UserName = u.UserName;  
+            }
+            if (u.Image != null)
+            {
+                Image newImage = uploader.getImage(u.Image, "Users");
+                if (newImage != null)
+                {
+                    updateUser.ImageId = newImage.ImageId;
+                    updateUser.Image = dbContext.Images.Find(updateUser.ImageId);
+                }
+            }
+        
+            dbContext.Users.Update(updateUser);
+            dbContext.SaveChanges();
+
+            return Ok(convertUserDTO(updateUser));
+        }
 
     }
 }

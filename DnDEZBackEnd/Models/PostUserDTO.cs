@@ -1,17 +1,15 @@
-﻿using DnDEZBackEnd.Models;
-
-namespace DnDEZBackend.Models
+﻿namespace DnDEZBackend.Models
 {
-    public class UserDTO
+    public class PostUserDTO
     {
-        public int UserId { get; set; }
-
         public string FirstName { get; set; } = null!;
 
         public string LastName { get; set; } = null!;
 
         public string UserName { get; set; } = null!;
 
-        public virtual ImageDTO? Image { get; set; }
+        public string Password { get; set; } = null!;
+
+        public virtual IFormFile? Image { get; set; }
     }
 }
