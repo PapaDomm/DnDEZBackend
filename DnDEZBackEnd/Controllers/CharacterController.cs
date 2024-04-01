@@ -1,8 +1,12 @@
-﻿using DnDEZBackEnd.Models;
+﻿using DnDEZBackend.Models;
+using DnDEZBackend.Models.Public_Classes;
+using DnDEZBackEnd.Models;
 using DnDEZBackEnd.Models.Public_Classes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace DnDEZBackEnd.Controllers
 {
@@ -12,7 +16,9 @@ namespace DnDEZBackEnd.Controllers
     {
         private DnDezdbContext dbContext = new DnDezdbContext();
 
-        private StatAdjuster statAdjuster = new StatAdjuster();
+        private UploadHandler uploader = new UploadHandler();
+
+        //private StatAdjuster statAdjuster = new StatAdjuster();
 
         static CharacterDTO convertCharacterDTO(Character c)
         {
@@ -22,7 +28,22 @@ namespace DnDEZBackEnd.Controllers
                 Race = c.Race,
                 Class = c.Class,
                 Level = c.Level,
+                Image = convertImageDTO(c.Image),
                 CharAbilityScores = c.CharAbilityScores.Select(a => convertAbilityDTO(a)).ToList()
+            };
+        }
+
+        static ImageDTO convertImageDTO(Image i)
+        {
+            if(i == null)
+            {
+                return null;
+            }
+
+            return new ImageDTO
+            {
+                ImageId = i.ImageId,
+                ImagePath = i.ImagePath
             };
         }
 
@@ -40,40 +61,41 @@ namespace DnDEZBackEnd.Controllers
         [HttpGet]
         public IActionResult getAllUserCharacters(int userId)
         {
-            List<CharacterDTO> result = dbContext.Characters.Include(a => a.CharAbilityScores).Where(c => c.UserId == userId).Select(c => convertCharacterDTO(c)).ToList();
+
+            List<CharacterDTO> result = dbContext.Characters.Include(a => a.CharAbilityScores).Include(i => i.Image).Where(c => c.UserId == userId).Select(c => convertCharacterDTO(c)).ToList();
 
             return Ok(result);
         }
 
-        [HttpGet("Race")]
-        public IActionResult getCharactersWRace(string race, int charId)
-        {
-            Character c = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == charId);
+        //[HttpGet("Race")]
+        //public async Task<IActionResult> getCharactersWRace(string race, int charId)
+        //{
+        //    Character c = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == charId);
 
-            Race r = DnDRaceDAL.getRace(race);
+        //    Race r = await DnDRaceDAL.getRace(race, DnDRaceDAL.dndClient);
 
-            if (c.Race == r.index && c.CharAbilityScores.Any(a => a.RacialBonus == true))
-            {
-                return Ok(convertCharacterDTO(c));
-            }
+        //    if (c.Race == r.index && c.CharAbilityScores.Any(a => a.RacialBonus == true))
+        //    {
+        //        return Ok(convertCharacterDTO(c));
+        //    }
 
-            if (c.Race != r.index && c.CharAbilityScores.Any(a => a.RacialBonus == true))
-            {
-                c = statAdjuster.abilityRaceDecrease(c);
-            }
+        //    if (c.Race != r.index && c.CharAbilityScores.Any(a => a.RacialBonus == true))
+        //    {
+        //        c = await statAdjuster.abilityRaceDecrease(c);
+        //    }
 
-            if ((c.Race != r.index && !c.CharAbilityScores.Any(a => a.RacialBonus == true)) || (c.Race == r.index && !c.CharAbilityScores.Any(a => a.RacialBonus == true)))
-            {
-                c = statAdjuster.abilityRaceIncrease(c, r);
-            }
+        //    if ((c.Race != r.index && !c.CharAbilityScores.Any(a => a.RacialBonus == true)) || (c.Race == r.index && !c.CharAbilityScores.Any(a => a.RacialBonus == true)))
+        //    {
+        //        c = statAdjuster.abilityRaceIncrease(c, r);
+        //    }
 
-            c.Race = race;
+        //    c.Race = race;
 
-            dbContext.Characters.Update(c);
-            dbContext.SaveChanges();
+        //    dbContext.Characters.Update(c);
+        //    dbContext.SaveChanges();
 
-            return Ok(convertCharacterDTO(c));
-        }
+        //    return Ok(convertCharacterDTO(c));
+        //}
 
         [HttpPost]
         public IActionResult createCharacter([FromForm] CharacterPostDTO c)
@@ -92,24 +114,43 @@ namespace DnDEZBackEnd.Controllers
             newCharacter.Class = c.Class;
             newCharacter.Level = c.Level;
 
+            string charabilitysfromform = c.CharAbilityScores;
+
+            if(c.Image != null)
+            {
+                Image newImage = uploader.getImage(c.Image, "Characters");
+                if(newImage != null)
+                {
+                    newCharacter.ImageId = newImage.ImageId;
+                    newCharacter.Image = dbContext.Images.Find(newCharacter.ImageId);
+                }
+            }
+
+            List<CharAbilityScoreDTO> newCharAbilityScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(charabilitysfromform).ToList();
+
             
 
             dbContext.Characters.Add(newCharacter);
             dbContext.SaveChanges();
 
-            Character addCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == newCharacter.CharacterId);
+            Character? addCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == newCharacter.CharacterId);
 
-            foreach (CharAbilityScoreDTO abi in c.CharAbilityScores)
+            if (addCharacter != null)
             {
-                CharAbilityScore newAbi = new CharAbilityScore();
-                newAbi.CharacterId = addCharacter.CharacterId;
-                newAbi.Index = abi.Index;
-                newAbi.Value = abi.Value;
-                newAbi.RacialBonus = abi.RacialBonus;
+                foreach (CharAbilityScoreDTO abi in newCharAbilityScores)
+                {
+                    CharAbilityScore newAbi = new CharAbilityScore();
+                    newAbi.CharacterId = addCharacter.CharacterId;
+                    newAbi.Index = abi.Index;
+                    newAbi.Value = abi.Value;
+                    newAbi.RacialBonus = abi.RacialBonus;
 
-                dbContext.CharAbilityScores.Add(newAbi);
-                dbContext.SaveChanges();
+                    dbContext.CharAbilityScores.Add(newAbi);
+                    dbContext.SaveChanges();
+                }
             }
+
+
 
             return Ok();
  

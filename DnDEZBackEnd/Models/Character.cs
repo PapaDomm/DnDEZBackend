@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DnDEZBackEnd.Models;
+namespace DnDEZBackend.Models;
 
 public partial class Character
 {
@@ -17,7 +17,11 @@ public partial class Character
 
     public int Level { get; set; }
 
-    public virtual List<CharAbilityScore> CharAbilityScores { get; set; } = new List<CharAbilityScore>();
+    public int? ImageId { get; set; }
+
+    public virtual ICollection<CharAbilityScore> CharAbilityScores { get; set; } = new List<CharAbilityScore>();
+
+    public virtual Image? Image { get; set; }
 
     public virtual User? User { get; set; }
 }

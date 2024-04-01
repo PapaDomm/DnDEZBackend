@@ -5,25 +5,35 @@ namespace DnDEZBackEnd.Models
 {
     public class DnDClassDAL
     {
-        public static DnDBasicObject getAllClasses()
+        public static HttpClient dndClient = new HttpClient()
+        {
+            BaseAddress = new Uri("https://www.dnd5eapi.co/api/classes/")
+        };
+
+        public static async Task<DnDBasicObject>? getAllClasses()
         {
             //Adjust
             //Setup
-            string url = $"https://www.dnd5eapi.co/api/classes";
+            //string url = $"https://www.dnd5eapi.co/api/classes";
 
 
             //Request
-            HttpWebRequest request = WebRequest.CreateHttp(url);
-            HttpWebResponse respone = (HttpWebResponse)request.GetResponse();
+            using HttpResponseMessage response = await dndClient.GetAsync("");
+            //HttpWebResponse respone = (HttpWebResponse)request.GetResponse();
 
             //Convert to JSON
-            StreamReader reader = new StreamReader(respone.GetResponseStream());
+            StreamReader reader = new StreamReader(response.Content.ReadAsStream());
             string JSON = reader.ReadToEnd();
 
             //Adjust
             //Convert to C#
             //Install Newtonsoft.Json
-            DnDBasicObject result = JsonConvert.DeserializeObject<DnDBasicObject>(JSON);
+            DnDBasicObject? result = JsonConvert.DeserializeObject<DnDBasicObject>(JSON);
+
+            if(result == null)
+            {
+                return result = new DnDBasicObject();
+            }
 
             return result;
         }

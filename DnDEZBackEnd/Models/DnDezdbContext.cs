@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DnDEZBackEnd.Models.Public_Classes;
 using Microsoft.EntityFrameworkCore;
 
-namespace DnDEZBackEnd.Models;
+namespace DnDEZBackend.Models;
 
 public partial class DnDezdbContext : DbContext
 {
@@ -21,6 +21,8 @@ public partial class DnDezdbContext : DbContext
     public virtual DbSet<CharAbilityScore> CharAbilityScores { get; set; }
 
     public virtual DbSet<Character> Characters { get; set; }
+
+    public virtual DbSet<Image> Images { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -72,16 +74,34 @@ public partial class DnDezdbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Race).HasMaxLength(10);
 
+            entity.HasOne(d => d.Image).WithMany(p => p.Characters)
+                .HasForeignKey(d => d.ImageId)
+                .HasConstraintName("character_imageid_fk");
+
             entity.HasOne(d => d.User).WithMany(p => p.Characters)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("character_userid_fk");
+        });
+
+        modelBuilder.Entity<Image>(entity =>
+        {
+            entity.HasKey(e => e.ImageId).HasName("images_imageid_pk");
+
+            entity.Property(e => e.ImagePath).HasMaxLength(1000);
         });
 
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("users_userid_pk");
 
-            entity.Property(e => e.Name).HasMaxLength(40);
+            entity.Property(e => e.FirstName).HasMaxLength(40);
+            entity.Property(e => e.LastName).HasMaxLength(40);
+            entity.Property(e => e.Password).HasMaxLength(30);
+            entity.Property(e => e.UserName).HasMaxLength(40);
+
+            entity.HasOne(d => d.Image).WithMany(p => p.Users)
+                .HasForeignKey(d => d.ImageId)
+                .HasConstraintName("users_imageid_fk");
         });
 
         OnModelCreatingPartial(modelBuilder);

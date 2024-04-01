@@ -1,6 +1,6 @@
-@DnDEZBackEnd_HostAddress = http://localhost:5149
+@DnDEZBackend_HostAddress = http://localhost:5087
 
-GET {{DnDEZBackEnd_HostAddress}}/weatherforecast/
+GET {{DnDEZBackend_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

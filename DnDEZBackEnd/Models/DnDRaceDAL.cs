@@ -1,52 +1,71 @@
-﻿using Newtonsoft.Json;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Newtonsoft.Json;
+using System.Diagnostics;
 using System.Net;
 
 namespace DnDEZBackEnd.Models
 {
     public class DnDRaceDAL
     {
-        public static Race getRace(string race)
+        public static HttpClient dndClient = new HttpClient()
         {
+            BaseAddress = new Uri("https://www.dnd5eapi.co/api/races/")
+        };
+
+        public async static Task<Race>? getRace(string race)
+        { 
             //Adjust
             //Setup
-            string url = $"https://www.dnd5eapi.co/api/races/{race}";
+            //string url = $"https://www.dnd5eapi.co/api/races/{race}";
+
             
 
+
             //Request
-            HttpWebRequest request = WebRequest.CreateHttp(url);
-            HttpWebResponse respone = (HttpWebResponse)request.GetResponse();
+            using HttpResponseMessage response = await dndClient.GetAsync($"{race}");
+            //HttpWebResponse respone = (HttpWebResponse)request.GetResponse();
 
             //Convert to JSON
-            StreamReader reader = new StreamReader(respone.GetResponseStream());
+            StreamReader reader = new StreamReader(response.Content.ReadAsStream());
             string JSON = reader.ReadToEnd();
 
             //Adjust
             //Convert to C#
             //Install Newtonsoft.Json
-            Race result = JsonConvert.DeserializeObject<Race>(JSON);
+            Race? result = JsonConvert.DeserializeObject<Race>(JSON);
+
+            if(result == null)
+            {
+                return result = new Race();
+            }
 
             return result;
         }
-        public static DnDBasicObject getAllRaces()
+        public static async Task<DnDBasicObject>? getAllRaces()
         {
             //Adjust
             //Setup
-            string url = $"https://www.dnd5eapi.co/api/races";
+            //string url = $"https://www.dnd5eapi.co/api/races";
 
 
             //Request
-            HttpWebRequest request = WebRequest.CreateHttp(url);
-            HttpWebResponse respone = (HttpWebResponse)request.GetResponse();
+            using HttpResponseMessage response = await dndClient.GetAsync("");
+            //HttpWebResponse respone = (HttpWebResponse)request.GetResponse();
 
             //Convert to JSON
-            StreamReader reader = new StreamReader(respone.GetResponseStream());
+            StreamReader reader = new StreamReader(response.Content.ReadAsStream());
             string JSON = reader.ReadToEnd();
 
             //Adjust
             //Convert to C#
             //Install Newtonsoft.Json
-            DnDBasicObject result = JsonConvert.DeserializeObject<DnDBasicObject>(JSON);
+            DnDBasicObject? result = JsonConvert.DeserializeObject<DnDBasicObject>(JSON);
 
+            if(result == null)
+            {
+                return result = new DnDBasicObject();
+            }
             return result;
         }
 

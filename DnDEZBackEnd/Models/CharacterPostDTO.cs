@@ -2,7 +2,7 @@
 {
     public class CharacterPostDTO
     {
-        public int? UserId { get; set; }
+        public int UserId { get; set; }
 
         public string Name { get; set; } = null!;
 
@@ -12,7 +12,9 @@
 
         public int Level { get; set; }
 
-        public List<CharAbilityScoreDTO> CharAbilityScores { get; set; }
+        public string CharAbilityScores { get; set; } = null!;
+
+        public IFormFile? Image { get; set; }
 
     }
 }

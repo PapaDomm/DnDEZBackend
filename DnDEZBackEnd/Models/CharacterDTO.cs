@@ -1,4 +1,6 @@
-﻿namespace DnDEZBackEnd.Models
+﻿using DnDEZBackend.Models;
+
+namespace DnDEZBackEnd.Models
 {
     public class CharacterDTO
     {
@@ -10,6 +12,8 @@
 
         public int Level { get; set; }
 
-        public virtual List<CharAbilityScoreDTO> CharAbilityScores { get; set; }
+        public ImageDTO? Image { get; set; }
+
+        public virtual List<CharAbilityScoreDTO> CharAbilityScores { get; set; } = new List<CharAbilityScoreDTO>();
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DnDEZBackEnd.Models;
+namespace DnDEZBackend.Models;
 
 public partial class AbilityScore
 {
