@@ -1,7 +1,7 @@
 USE master;
 GO 
 
-
+DROP DATABASE DnDEZDB;
 
 CREATE DATABASE DnDEZDB;
 GO
@@ -25,6 +25,7 @@ CREATE TABLE [Users](
 	UserName NVARCHAR(40) NOT NULL,
 	[Password] NVARCHAR(30) NOT NULL,
 	ImageId INT,
+	Active BIT NOT NULL DEFAULT '1',
 
 	--Constraints
 	--PrimaryKey
@@ -43,6 +44,7 @@ CREATE TABLE [Character](
 	Class NVARCHAR(9) NOT NULL,
 	[Level] INT NOT NULL,
 	ImageId INT,
+	Active BIT NOT NULL DEFAULT '1',
 
 	--Constraints
 	--Primary Key
@@ -88,12 +90,11 @@ CREATE TABLE Char_Ability_Scores(
 	CONSTRAINT charabilityscores_value_ck CHECK ([Value] >= 1 AND [Value] <= 20)
 );
 
-INSERT INTO [Users]
-		(FirstName, LastName, UserName, [Password])
+INSERT INTO Images 
+	(ImagePath)
 VALUES
-	('Eli', 'Reid', 'hajile7', '12345'),
-	('Dominic', 'Nutaitis', 'PapaDomm', '12345'),
-	('Ethan', 'Thomas', 'EthanChrist', '12345')
+	('Images\Users\defaultProfilePic.png'),
+	('Images\Characters\defaultCharacterImage.png')
 
 INSERT INTO Ability_Scores
 	([Index], [Name])
@@ -104,6 +105,17 @@ VALUES
 	('int', 'Int'),
 	('wis', 'Wis'),
 	('cha', 'Cha')
+
+
+--Test Data
+INSERT INTO [Users]
+		(FirstName, LastName, UserName, [Password])
+VALUES
+	('Eli', 'Reid', 'hajile7', '12345'),
+	('Dominic', 'Nutaitis', 'PapaDomm', '12345'),
+	('Ethan', 'Thomas', 'EthanChrist', '12345')
+
+
 
 INSERT INTO [Character]
 	(UserId, [Name], Race, Class, [Level])
@@ -129,8 +141,6 @@ VALUES
 	(102, 'wis', 2),
 	(102, 'cha', 20)
 
-
-select * from Images
 
 select * from Users
 

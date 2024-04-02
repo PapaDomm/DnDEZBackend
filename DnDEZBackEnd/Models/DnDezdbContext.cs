@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
 using DnDEZBackEnd.Models.Public_Classes;
+using Microsoft.EntityFrameworkCore;
+
 namespace DnDEZBackend.Models;
 
 public partial class DnDezdbContext : DbContext
@@ -69,6 +70,9 @@ public partial class DnDezdbContext : DbContext
 
             entity.ToTable("Character");
 
+            entity.Property(e => e.Active)
+                .IsRequired()
+                .HasDefaultValueSql("('1')");
             entity.Property(e => e.Class).HasMaxLength(9);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Race).HasMaxLength(10);
@@ -93,6 +97,9 @@ public partial class DnDezdbContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("users_userid_pk");
 
+            entity.Property(e => e.Active)
+                .IsRequired()
+                .HasDefaultValueSql("('1')");
             entity.Property(e => e.FirstName).HasMaxLength(40);
             entity.Property(e => e.LastName).HasMaxLength(40);
             entity.Property(e => e.Password).HasMaxLength(30);

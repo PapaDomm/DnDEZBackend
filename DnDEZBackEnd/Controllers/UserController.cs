@@ -1,6 +1,8 @@
 ﻿using DnDEZBackend.Models;
+using DnDEZBackend.Models.DTOs;
+using DnDEZBackend.Models.DTOs.CharacterDTOs;
+using DnDEZBackend.Models.DTOs.UserDTOs;
 using DnDEZBackend.Models.Public_Classes;
-using DnDEZBackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -67,7 +69,12 @@ namespace DnDEZBackend.Controllers
         [HttpGet("{userId}")]
         public IActionResult getUser(int userId)
         {
-            User result = dbContext.Users.Include(i => i.Image).Include(c => c.Characters).ThenInclude(i => i.Image).FirstOrDefault(u => u.UserId == userId);
+            User result = dbContext.Users.Include(i => i.Image).Include(c => c.Characters).ThenInclude(i => i.Image).Where(u => u.Active == true).FirstOrDefault(u => u.UserId == userId);
+
+            if (result == null)
+            {
+                return NotFound("User Not Found");
+            }
 
             return Ok(convertUserDTO(result));
         }
@@ -75,7 +82,7 @@ namespace DnDEZBackend.Controllers
         [HttpGet("Login")]
         public IActionResult Login(string username, string password)
         {
-            User result = dbContext.Users.Include(i => i.Image).FirstOrDefault(u => u.UserName == username && u.Password == password);
+            User result = dbContext.Users.Include(i => i.Image).Where(u => u.Active == true).FirstOrDefault(u => u.UserName == username && u.Password == password);
             if (result == null)
             {
                 NotFound();
@@ -84,47 +91,61 @@ namespace DnDEZBackend.Controllers
         }
 
         [HttpPost]
-        public IActionResult createUser([FromForm]PostUserDTO u)
+        public IActionResult createUser([FromForm] PostUserDTO u)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            
+
+            if (dbContext.Users.Any(o => o.UserName == u.UserName))
+            {
+                return BadRequest(u.UserName + "is already in use");
+            }
+
             User newUser = new User();
 
             newUser.FirstName = u.FirstName;
             newUser.LastName = u.LastName;
             newUser.UserName = u.UserName;
             newUser.Password = u.Password;
+            newUser.Active = true;
 
-            if (u.Image != null) {
+            if (u.Image != null)
+            {
                 Image newImage = uploader.getImage(u.Image, "Users");
-                if (newImage != null) 
+                if (newImage != null)
                 {
                     newUser.ImageId = newImage.ImageId;
                     newUser.Image = dbContext.Images.Find(newUser.ImageId);
                 }
             }
+            else
+            {
+                newUser.ImageId = 101;
+                newUser.Image = dbContext.Images.Find(newUser.ImageId);
+            }
 
             dbContext.Users.Add(newUser);
             dbContext.SaveChanges();
 
-            return CreatedAtAction(nameof(getUser), new
-            {
-                id = newUser.UserId
-            }, convertUserDTO(newUser));   
+            //return CreatedAtAction(nameof(getUser), new
+            //{
+            //    id = newUser.UserId
+            //}, convertUserDTO(newUser));   
+
+            return Ok(convertUserDTO(newUser));
 
         }
 
-        [HttpPut]
-        public IActionResult updateUser([FromForm]putUserDTO u, int userId)
+        [HttpPut("{id}")]
+        public IActionResult updateUser([FromForm]putUserDTO u, int id)
         {
-            User updateUser = dbContext.Users.Find(userId);
+            User updateUser = dbContext.Users.Find(id);
 
-            if(updateUser == null)
+            if(updateUser == null || updateUser.Active == false)
             {
-                return NoContent();
+                return NotFound("User Not Found");
             }
             if (u.FirstName != null)
             {
@@ -136,7 +157,12 @@ namespace DnDEZBackend.Controllers
             }
             if (u.UserName != null)
             {
-                updateUser.UserName = u.UserName;  
+                if(dbContext.Users.Any(o => o.UserName == u.UserName && u.UserName != updateUser.UserName))
+                {
+                    return BadRequest();
+                }
+                updateUser.UserName = u.UserName;
+                
             }
             if (u.Image != null)
             {
@@ -152,6 +178,24 @@ namespace DnDEZBackend.Controllers
             dbContext.SaveChanges();
 
             return Ok(convertUserDTO(updateUser));
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult removeUser(int id)
+        {
+            User result = dbContext.Users.Find(id);
+
+            if(result == null || result.Active == false)
+            {
+                return NotFound("User Not Found");
+            }
+
+            result.Active = false;
+
+            dbContext.Users.Update(result);
+            dbContext.SaveChanges();
+
+            return NoContent();
         }
 
     }

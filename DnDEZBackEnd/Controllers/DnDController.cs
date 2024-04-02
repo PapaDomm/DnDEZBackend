@@ -1,4 +1,6 @@
 ﻿using DnDEZBackend.Models;
+using DnDEZBackend.Models.DALs;
+using DnDEZBackend.Models.DTOs;
 using DnDEZBackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

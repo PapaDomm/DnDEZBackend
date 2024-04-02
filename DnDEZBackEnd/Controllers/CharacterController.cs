@@ -1,6 +1,7 @@
 ﻿using DnDEZBackend.Models;
+using DnDEZBackend.Models.DTOs;
+using DnDEZBackend.Models.DTOs.CharacterDTOs;
 using DnDEZBackend.Models.Public_Classes;
-using DnDEZBackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +63,7 @@ namespace DnDEZBackEnd.Controllers
         public IActionResult getAllUserCharacters(int userId)
         {
 
-            List<CharacterDTO> result = dbContext.Characters.Include(a => a.CharAbilityScores).Include(i => i.Image).Where(c => c.UserId == userId).Select(c => convertCharacterDTO(c)).ToList();
+            List<CharacterDTO> result = dbContext.Characters.Include(a => a.CharAbilityScores).Include(i => i.Image).Where(c => c.UserId == userId && c.Active == true).Select(c => convertCharacterDTO(c)).ToList();
 
             return Ok(result);
         }
@@ -70,7 +71,7 @@ namespace DnDEZBackEnd.Controllers
         [HttpGet("{CharacterId}")]
         public IActionResult getChar(int CharacterId)
         {
-            Character result = dbContext.Characters.Include(i => i.Image).Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == CharacterId);
+            Character result = dbContext.Characters.Include(i => i.Image).Include(a => a.CharAbilityScores).Where(c => c.Active == true).FirstOrDefault(c => c.CharacterId == CharacterId);
             if(result == null)
             {
                 return NotFound();
@@ -95,6 +96,7 @@ namespace DnDEZBackEnd.Controllers
             newCharacter.Race = c.Race;
             newCharacter.Class = c.Class;
             newCharacter.Level = c.Level;
+            newCharacter.Active = true;
 
             string charabilitysfromform = c.CharAbilityScores;
 
@@ -106,6 +108,11 @@ namespace DnDEZBackEnd.Controllers
                     newCharacter.ImageId = newImage.ImageId;
                     newCharacter.Image = dbContext.Images.Find(newCharacter.ImageId);
                 }
+            }
+            else
+            {
+                newCharacter.ImageId = 102;
+                newCharacter.Image = dbContext.Images.Find(newCharacter.ImageId);
             }
 
             List<CharAbilityScoreDTO> newCharAbilityScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(charabilitysfromform).ToList();
@@ -133,6 +140,92 @@ namespace DnDEZBackEnd.Controllers
             //return CreatedAtAction(nameof(getChar), new {id=newCharacter.CharacterId}, convertCharacterDTO(newCharacter));
             return Ok(convertCharacterDTO(newCharacter));
  
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult updateCharacter([FromForm] CharacterPutDTO c, int id)
+        {
+            Character updateCharacter = dbContext.Characters.Find(id);
+
+            string updateAbilities = c.CharAbilityScores;
+
+            if(updateCharacter == null || updateCharacter.Active == false)
+            {
+                return NotFound("User Not Found");
+            }
+
+            if(c.Name != null)
+            {
+                updateCharacter.Name = c.Name;
+            }
+
+            if(c.Race != null)
+            {
+                updateCharacter.Race = c.Race;
+            }
+
+            if(c.Class != null)
+            {
+                updateCharacter.Class = c.Class;
+            }
+
+            if(c.Level != null) 
+            {
+                updateCharacter.Level = c.Level;
+            }
+
+            if(c.Image != null)
+            {
+                Image newImage = uploader.getImage(c.Image, "Characters");
+                if(newImage != null)
+                {
+                    updateCharacter.ImageId = newImage.ImageId;
+                    updateCharacter.Image = dbContext.Images.Find(newImage.ImageId);
+                }
+            }
+
+            List<CharAbilityScoreDTO> updateScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(updateAbilities).ToList();
+
+            dbContext.Characters.Add(updateCharacter);
+            dbContext.SaveChanges();
+
+            Character? targetCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == updateCharacter.CharacterId);
+
+            if (targetCharacter != null)
+            {
+                foreach (CharAbilityScoreDTO abi in updateScores)
+                {
+                    CharAbilityScore newAbi = new CharAbilityScore();
+                    newAbi.CharacterId = targetCharacter.CharacterId;
+                    newAbi.Index = abi.Index;
+                    newAbi.Value = abi.Value;
+                    newAbi.RacialBonus = abi.RacialBonus;
+
+                    dbContext.CharAbilityScores.Add(newAbi);
+                    dbContext.SaveChanges();
+                }
+            }
+
+            return Ok(convertCharacterDTO(updateCharacter));
+
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult removeCharacter(int id)
+        {
+            Character result = dbContext.Characters.Find(id);
+
+            if(result == null || result.Active == false)
+            {
+                return NotFound("Character Not Found");
+            }
+
+            result.Active = false;
+
+            dbContext.Characters.Update(result);
+            dbContext.SaveChanges();
+
+            return NoContent();
         }
     }
 }
