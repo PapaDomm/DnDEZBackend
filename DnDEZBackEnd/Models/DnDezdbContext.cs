@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using DnDEZBackend.Models.Public_Classes;
+using DnDEZBackEnd.Models.Public_Classes;
 namespace DnDEZBackend.Models;
 
 public partial class DnDezdbContext : DbContext

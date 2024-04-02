@@ -130,7 +130,8 @@ namespace DnDEZBackEnd.Controllers
                 }
             }
 
-            return CreatedAtAction(nameof(getChar), new {id=newCharacter.CharacterId}, convertCharacterDTO(newCharacter));
+            //return CreatedAtAction(nameof(getChar), new {id=newCharacter.CharacterId}, convertCharacterDTO(newCharacter));
+            return Ok(convertCharacterDTO(newCharacter));
  
         }
     }
