@@ -186,7 +186,7 @@ namespace DnDEZBackEnd.Controllers
 
             List<CharAbilityScoreDTO> updateScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(updateAbilities).ToList();
 
-            dbContext.Characters.Add(updateCharacter);
+            dbContext.Characters.Update(updateCharacter);
             dbContext.SaveChanges();
 
             Character? targetCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == updateCharacter.CharacterId);
@@ -195,13 +195,11 @@ namespace DnDEZBackEnd.Controllers
             {
                 foreach (CharAbilityScoreDTO abi in updateScores)
                 {
-                    CharAbilityScore newAbi = new CharAbilityScore();
-                    newAbi.CharacterId = targetCharacter.CharacterId;
-                    newAbi.Index = abi.Index;
-                    newAbi.Value = abi.Value;
-                    newAbi.RacialBonus = abi.RacialBonus;
+                    CharAbilityScore targetAbi = dbContext.CharAbilityScores.FirstOrDefault(a => a.Index == abi.Index && a.CharacterId == targetCharacter.CharacterId);
+                    targetAbi.Value = abi.Value;
+                    targetAbi.RacialBonus = abi.RacialBonus;
 
-                    dbContext.CharAbilityScores.Add(newAbi);
+                    dbContext.CharAbilityScores.Update(targetAbi);
                     dbContext.SaveChanges();
                 }
             }

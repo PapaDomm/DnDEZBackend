@@ -71,7 +71,7 @@ namespace DnDEZBackend.Controllers
         {
             User result = dbContext.Users.Include(i => i.Image).Include(c => c.Characters).ThenInclude(i => i.Image).Where(u => u.Active == true).FirstOrDefault(u => u.UserId == userId);
 
-            if (result == null)
+            if (result == null || result.Active == false)
             {
                 return NotFound("User Not Found");
             }
@@ -83,7 +83,7 @@ namespace DnDEZBackend.Controllers
         public IActionResult Login(string username, string password)
         {
             User result = dbContext.Users.Include(i => i.Image).Where(u => u.Active == true).FirstOrDefault(u => u.UserName == username && u.Password == password);
-            if (result == null)
+            if (result == null || result.Active == false)
             {
                 NotFound();
             }
@@ -98,7 +98,7 @@ namespace DnDEZBackend.Controllers
                 return BadRequest();
             }
 
-            if (dbContext.Users.Any(o => o.UserName == u.UserName))
+            if (dbContext.Users.Any(o => o.UserName == u.UserName && o.Active == true))
             {
                 return BadRequest(u.UserName + "is already in use");
             }
@@ -141,7 +141,7 @@ namespace DnDEZBackend.Controllers
         [HttpPut("{id}")]
         public IActionResult updateUser([FromForm]putUserDTO u, int id)
         {
-            User updateUser = dbContext.Users.Find(id);
+            User updateUser = dbContext.Users.Include(i => i.Image).FirstOrDefault(u => u.UserId == id);
 
             if(updateUser == null || updateUser.Active == false)
             {
