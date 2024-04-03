@@ -1,4 +1,6 @@
-﻿namespace DnDEZBackend.Models.DTOs.DnDDTOs
+﻿using DnDEZBackend.Models.DTOs.StatsDTOs;
+
+namespace DnDEZBackend.Models.DTOs.DnDDTOs
 {
     public class ProficiencyDTO
     {

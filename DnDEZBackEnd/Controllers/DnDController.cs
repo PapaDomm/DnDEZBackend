@@ -1,8 +1,8 @@
 ﻿using DnDEZBackend.Models;
 using DnDEZBackend.Models.DALs;
-using DnDEZBackend.Models.DTOs;
 using DnDEZBackend.Models.DTOs.CharacterDTOs;
 using DnDEZBackend.Models.DTOs.DnDDTOs;
+using DnDEZBackend.Models.DTOs.StatsDTOs;
 using DnDEZBackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +21,7 @@ namespace DnDEZBackEnd.Controllers
             {
                 index = r.index,
                 name = r.name,
+                speed = r.speed,
                 ability_bonuses = r.ability_bonuses
             };
         }
@@ -93,6 +94,19 @@ namespace DnDEZBackEnd.Controllers
             foreach(Result r in result)
             {
                 result2.Add(await convertClassDTO(await DnDClassDAL.getClass(r.Index)!));
+            }
+            return Ok(result2);
+        }
+
+        [HttpGet("Alignment")]
+        public async Task<IActionResult> getAlignments()
+        {
+            DnDBasicObject response = await DnDStatsDAL.getAlignments()!;
+            List<Result> result = response.Results.ToList();
+            List<string> result2 = new List<string>();
+            foreach (Result r in result)
+            {
+                result2.Add(r.Name);
             }
             return Ok(result2);
         }

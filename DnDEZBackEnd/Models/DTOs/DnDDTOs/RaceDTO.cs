@@ -6,6 +6,7 @@ namespace DnDEZBackend.Models.DTOs.DnDDTOs
     {
         public string index { get; set; } = null!;
         public string name { get; set; } = null!;
+        public int speed { get; set; }
         public Ability_Bonuses[] ability_bonuses { get; set; } = null!;
 
     }

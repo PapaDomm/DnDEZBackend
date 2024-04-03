@@ -1,6 +1,7 @@
 ﻿using DnDEZBackend.Models;
 using DnDEZBackend.Models.DTOs;
 using DnDEZBackend.Models.DTOs.CharacterDTOs;
+using DnDEZBackend.Models.DTOs.StatsDTOs;
 using DnDEZBackend.Models.Public_Classes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -30,8 +31,34 @@ namespace DnDEZBackEnd.Controllers
                 Race = c.Race,
                 Class = c.Class,
                 Level = c.Level,
+                ProfBonus = c.ProfBonus,
+                Initiative = c.Initiative,
+                Speed = c.Speed,
+                Alignment = c.Alignment,
                 Image = convertImageDTO(c.Image),
-                CharAbilityScores = c.CharAbilityScores.Select(a => convertAbilityDTO(a)).ToList()
+                CharAbilityScores = c.CharAbilityScores.Select(a => convertAbilityDTO(a)).ToList(),
+                SavingThrows = c.SavingThrows.Select(t => converSavingThrowDTO(t)).ToList(),
+                CharSkillScores = c.CharSkills.Select(s => convertCharSkillDTO(s)).ToList()
+            };
+        }
+
+        static SavingThrowDTO converSavingThrowDTO(SavingThrow t)
+        {
+            return new SavingThrowDTO
+            {
+                Index = t.Index,
+                Value = t.Value,
+                Proficient = t.Proficient
+            };
+        }
+
+        static CharSkillDTO convertCharSkillDTO(CharSkill s)
+        {
+            return new CharSkillDTO
+            {
+                Index = s.Index,
+                Value = s.Value,
+                Proficient = s.Proficient
             };
         }
 
@@ -63,7 +90,7 @@ namespace DnDEZBackEnd.Controllers
         public IActionResult getAllUserCharacters(int userId)
         {
 
-            List<CharacterDTO> result = dbContext.Characters.Include(a => a.CharAbilityScores).Include(i => i.Image).Where(c => c.UserId == userId && c.Active == true).Select(c => convertCharacterDTO(c)).ToList();
+            List<CharacterDTO> result = dbContext.Characters.Include(a => a.CharAbilityScores).Include(s => s.CharSkills).Include(t => t.SavingThrows).Include(i => i.Image).Where(c => c.UserId == userId && c.Active == true).Select(c => convertCharacterDTO(c)).ToList();
 
             return Ok(result);
         }
@@ -71,7 +98,7 @@ namespace DnDEZBackEnd.Controllers
         [HttpGet("{CharacterId}")]
         public IActionResult getChar(int CharacterId)
         {
-            Character result = dbContext.Characters.Include(i => i.Image).Include(a => a.CharAbilityScores).Where(c => c.Active == true).FirstOrDefault(c => c.CharacterId == CharacterId);
+            Character result = dbContext.Characters.Include(i => i.Image).Include(a => a.CharAbilityScores).Include(s => s.CharSkills).Include(t => t.SavingThrows).Where(c => c.Active == true).FirstOrDefault(c => c.CharacterId == CharacterId);
             if(result == null)
             {
                 return NotFound();
@@ -96,9 +123,15 @@ namespace DnDEZBackEnd.Controllers
             newCharacter.Race = c.Race;
             newCharacter.Class = c.Class;
             newCharacter.Level = c.Level;
+            newCharacter.ProfBonus = c.ProfBonus;
+            newCharacter.Initiative = c.Initiative;
+            newCharacter.Speed = c.Speed;
+            newCharacter.Alignment = c.Alignment;
             newCharacter.Active = true;
 
             string charabilitysfromform = c.CharAbilityScores;
+            string charskillsfromform = c.CharSkillScores;
+            string charsavingthrowsfromform = c.CharSavingThrows;
 
             if(c.Image != null)
             {
@@ -116,11 +149,13 @@ namespace DnDEZBackEnd.Controllers
             }
 
             List<CharAbilityScoreDTO> newCharAbilityScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(charabilitysfromform).ToList();
+            List<CharSkillDTO> newCharSkillScores = JsonConvert.DeserializeObject<List<CharSkillDTO>>(charskillsfromform).ToList();
+            List<SavingThrowDTO> newCharSavingThrows = JsonConvert.DeserializeObject<List<SavingThrowDTO>>(charsavingthrowsfromform).ToList();
 
             dbContext.Characters.Add(newCharacter);
             dbContext.SaveChanges();
 
-            Character? addCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == newCharacter.CharacterId);
+            Character? addCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).Include(s => s.CharSkills).Include(t => t.SavingThrows).FirstOrDefault(c => c.CharacterId == newCharacter.CharacterId);
 
             if (addCharacter != null)
             {
@@ -133,6 +168,30 @@ namespace DnDEZBackEnd.Controllers
                     newAbi.RacialBonus = abi.RacialBonus;
 
                     dbContext.CharAbilityScores.Add(newAbi);
+                    dbContext.SaveChanges();
+                }
+
+                foreach (CharSkillDTO skill in newCharSkillScores)
+                {
+                    CharSkill newSkill = new CharSkill();
+                    newSkill.CharacterId = addCharacter.CharacterId;
+                    newSkill.Index = skill.Index;
+                    newSkill.Value = skill.Value;
+                    newSkill.Proficient = skill.Proficient;
+
+                    dbContext.CharSkills.Add(newSkill);
+                    dbContext.SaveChanges();
+                }
+
+                foreach(SavingThrowDTO savingthrow in newCharSavingThrows)
+                {
+                    SavingThrow newSavingThrow = new SavingThrow();
+                    newSavingThrow.CharacterId = addCharacter.CharacterId;
+                    newSavingThrow.Index = savingthrow.Index;
+                    newSavingThrow.Value = savingthrow.Value;
+                    newSavingThrow.Proficient = savingthrow.Proficient;
+
+                    dbContext.SavingThrows.Add(newSavingThrow);
                     dbContext.SaveChanges();
                 }
             }
@@ -148,6 +207,8 @@ namespace DnDEZBackEnd.Controllers
             Character updateCharacter = dbContext.Characters.Include(i => i.Image).FirstOrDefault(c => c.CharacterId == id);
 
             string updateAbilities = c.CharAbilityScores;
+            string updateSkills = c.CharSkillScores;
+            string updateSavingThrows = c.CharSavingThrows;
 
             if(updateCharacter == null || updateCharacter.Active == false)
             {
@@ -174,7 +235,27 @@ namespace DnDEZBackEnd.Controllers
                 updateCharacter.Level = c.Level;
             }
 
-            if(c.Image != null)
+            if(c.ProfBonus != null)
+            {
+                updateCharacter.ProfBonus = c.ProfBonus;
+            }
+
+            if(c.Initiative != null)
+            {
+                updateCharacter.Initiative = c.Initiative;
+            }
+
+            if (c.Speed != null)
+            {
+                updateCharacter.Speed = c.Speed;
+            }
+
+            if(c.Alignment != null)
+            {
+                updateCharacter.Alignment = c.Alignment;
+            }
+
+            if (c.Image != null)
             {
                 Image newImage = uploader.getImage(c.Image, "Characters");
                 if(newImage != null)
@@ -190,11 +271,13 @@ namespace DnDEZBackEnd.Controllers
             }
 
             List<CharAbilityScoreDTO> updateScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(updateAbilities).ToList();
+            List<CharSkillDTO> updateSkillScores = JsonConvert.DeserializeObject<List<CharSkillDTO>>(updateSkills).ToList();
+            List<SavingThrowDTO> updateSavingThrowScores = JsonConvert.DeserializeObject<List<SavingThrowDTO>>(updateSavingThrows).ToList();
 
             dbContext.Characters.Update(updateCharacter);
             dbContext.SaveChanges();
 
-            Character? targetCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).FirstOrDefault(c => c.CharacterId == updateCharacter.CharacterId);
+            Character? targetCharacter = dbContext.Characters.Include(a => a.CharAbilityScores).Include(s => s.CharSkills).Include(t => t.SavingThrows).FirstOrDefault(c => c.CharacterId == updateCharacter.CharacterId);
 
             if (targetCharacter != null)
             {
@@ -205,6 +288,26 @@ namespace DnDEZBackEnd.Controllers
                     targetAbi.RacialBonus = abi.RacialBonus;
 
                     dbContext.CharAbilityScores.Update(targetAbi);
+                    dbContext.SaveChanges();
+                }
+
+                foreach(CharSkillDTO skill in updateSkillScores)
+                {
+                    CharSkill targetSkill = dbContext.CharSkills.FirstOrDefault(s => s.Index == skill.Index && s.CharacterId == targetCharacter.CharacterId);
+                    targetSkill.Value = skill.Value;
+                    targetSkill.Proficient = skill.Proficient;
+
+                    dbContext.CharSkills.Update(targetSkill);
+                    dbContext.SaveChanges();
+                }
+
+                foreach(SavingThrowDTO save in updateSavingThrowScores)
+                {
+                    SavingThrow targetSave = dbContext.SavingThrows.FirstOrDefault(t => t.Index ==  save.Index && t.CharacterId == targetCharacter.CharacterId);
+                    targetSave.Value = save.Value;
+                    targetSave.Proficient = save.Proficient;
+
+                    dbContext.SavingThrows.Update(targetSave); 
                     dbContext.SaveChanges();
                 }
             }
