@@ -145,7 +145,7 @@ namespace DnDEZBackEnd.Controllers
         [HttpPut("{id}")]
         public IActionResult updateCharacter([FromForm] CharacterPutDTO c, int id)
         {
-            Character updateCharacter = dbContext.Characters.Find(id);
+            Character updateCharacter = dbContext.Characters.Include(i => i.Image).FirstOrDefault(c => c.CharacterId == id);
 
             string updateAbilities = c.CharAbilityScores;
 
@@ -179,6 +179,11 @@ namespace DnDEZBackEnd.Controllers
                 Image newImage = uploader.getImage(c.Image, "Characters");
                 if(newImage != null)
                 {
+                    if(updateCharacter.Image != null && System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), updateCharacter.Image.ImagePath)) && updateCharacter.Image.ImagePath != "Images\\Characters\\defaultCharacterImage.png")
+                    {
+                        System.IO.File.Delete(Path.Combine(Directory.GetCurrentDirectory(), updateCharacter.Image.ImagePath));
+                        dbContext.Images.Remove(updateCharacter.Image);
+                    }
                     updateCharacter.ImageId = newImage.ImageId;
                     updateCharacter.Image = dbContext.Images.Find(newImage.ImageId);
                 }

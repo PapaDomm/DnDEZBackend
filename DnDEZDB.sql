@@ -147,3 +147,5 @@ select * from Users
 select * from Images
 
 select * from [Character]
+
+select * from Char_Ability_Scores

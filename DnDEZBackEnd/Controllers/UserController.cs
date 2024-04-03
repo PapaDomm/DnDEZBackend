@@ -85,7 +85,7 @@ namespace DnDEZBackend.Controllers
             User result = dbContext.Users.Include(i => i.Image).Where(u => u.Active == true).FirstOrDefault(u => u.UserName == username && u.Password == password);
             if (result == null || result.Active == false)
             {
-                NotFound();
+                return NotFound();
             }
             return Ok(convertUserDTO(result));
         }
@@ -169,6 +169,11 @@ namespace DnDEZBackend.Controllers
                 Image newImage = uploader.getImage(u.Image, "Users");
                 if (newImage != null)
                 {
+                    if (updateUser.Image != null && System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), updateUser.Image.ImagePath)) && updateUser.Image.ImagePath != "Images\\Users\\defaultProfilePic.png")
+                    {
+                        System.IO.File.Delete(Path.Combine(Directory.GetCurrentDirectory(), updateUser.Image.ImagePath));
+                        dbContext.Images.Remove(updateUser.Image);
+                    }
                     updateUser.ImageId = newImage.ImageId;
                     updateUser.Image = dbContext.Images.Find(updateUser.ImageId);
                 }
