@@ -17,13 +17,25 @@ public partial class Character
 
     public int? Level { get; set; }
 
+    public int ProfBonus { get; set; }
+
+    public int Initiative { get; set; }
+
+    public int Speed { get; set; }
+
+    public string Alignment { get; set; } = null!;
+
     public int? ImageId { get; set; }
 
     public bool? Active { get; set; }
 
     public virtual ICollection<CharAbilityScore> CharAbilityScores { get; set; } = new List<CharAbilityScore>();
 
+    public virtual ICollection<CharSkill> CharSkills { get; set; } = new List<CharSkill>();
+
     public virtual Image? Image { get; set; }
+
+    public virtual ICollection<SavingThrow> SavingThrows { get; set; } = new List<SavingThrow>();
 
     public virtual User? User { get; set; }
 }

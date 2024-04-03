@@ -20,9 +20,15 @@ public partial class DnDezdbContext : DbContext
 
     public virtual DbSet<CharAbilityScore> CharAbilityScores { get; set; }
 
+    public virtual DbSet<CharSkill> CharSkills { get; set; }
+
     public virtual DbSet<Character> Characters { get; set; }
 
     public virtual DbSet<Image> Images { get; set; }
+
+    public virtual DbSet<SavingThrow> SavingThrows { get; set; }
+
+    public virtual DbSet<Skill> Skills { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -64,6 +70,28 @@ public partial class DnDezdbContext : DbContext
                 .HasConstraintName("charabilityscores_index_fk");
         });
 
+        modelBuilder.Entity<CharSkill>(entity =>
+        {
+            entity.HasKey(e => new { e.CharacterId, e.Index }).HasName("charskills_charskillsid_pk");
+
+            entity.ToTable("Char_Skills");
+
+            entity.Property(e => e.Index).HasMaxLength(15);
+            entity.Property(e => e.Proficient)
+                .IsRequired()
+                .HasDefaultValueSql("('0')");
+
+            entity.HasOne(d => d.Character).WithMany(p => p.CharSkills)
+                .HasForeignKey(d => d.CharacterId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("charskills_characterid_fk");
+
+            entity.HasOne(d => d.IndexNavigation).WithMany(p => p.CharSkills)
+                .HasForeignKey(d => d.Index)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("charskills_index_fk");
+        });
+
         modelBuilder.Entity<Character>(entity =>
         {
             entity.HasKey(e => e.CharacterId).HasName("character_characterid_pk");
@@ -73,6 +101,7 @@ public partial class DnDezdbContext : DbContext
             entity.Property(e => e.Active)
                 .IsRequired()
                 .HasDefaultValueSql("('1')");
+            entity.Property(e => e.Alignment).HasMaxLength(15);
             entity.Property(e => e.Class).HasMaxLength(9);
             entity.Property(e => e.Name).HasMaxLength(100);
             entity.Property(e => e.Race).HasMaxLength(10);
@@ -91,6 +120,42 @@ public partial class DnDezdbContext : DbContext
             entity.HasKey(e => e.ImageId).HasName("images_imageid_pk");
 
             entity.Property(e => e.ImagePath).HasMaxLength(1000);
+        });
+
+        modelBuilder.Entity<SavingThrow>(entity =>
+        {
+            entity.HasKey(e => new { e.CharacterId, e.Index }).HasName("savingthrows_savingthrowsid_pk");
+
+            entity.ToTable("Saving_Throws");
+
+            entity.Property(e => e.Index).HasMaxLength(3);
+            entity.Property(e => e.Proficient)
+                .IsRequired()
+                .HasDefaultValueSql("('0')");
+
+            entity.HasOne(d => d.Character).WithMany(p => p.SavingThrows)
+                .HasForeignKey(d => d.CharacterId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("savingthrows_characterid_fk");
+
+            entity.HasOne(d => d.IndexNavigation).WithMany(p => p.SavingThrows)
+                .HasForeignKey(d => d.Index)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("savingthrows_index_fk");
+        });
+
+        modelBuilder.Entity<Skill>(entity =>
+        {
+            entity.HasKey(e => e.Index).HasName("skills_index_pk");
+
+            entity.Property(e => e.Index).HasMaxLength(15);
+            entity.Property(e => e.AbilityIndex).HasMaxLength(3);
+            entity.Property(e => e.Name).HasMaxLength(15);
+
+            entity.HasOne(d => d.AbilityIndexNavigation).WithMany(p => p.Skills)
+                .HasForeignKey(d => d.AbilityIndex)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("skills_abilityindex_fk");
         });
 
         modelBuilder.Entity<User>(entity =>

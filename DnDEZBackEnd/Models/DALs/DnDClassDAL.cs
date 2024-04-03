@@ -38,5 +38,22 @@ namespace DnDEZBackend.Models.DALs
 
             return result;
         }
+
+        public async static Task<Class>? getClass(string c)
+        {
+            using HttpResponseMessage response = await dndClient.GetAsync($"{c}");
+
+            StreamReader reader = new StreamReader(response.Content.ReadAsStream());
+            string JSON = reader.ReadToEnd();
+
+            Class? result = JsonConvert.DeserializeObject<Class>(JSON);
+
+            if(result == null)
+            {
+                return result = new Class();
+            }
+
+            return result;
+        }
     }
 }

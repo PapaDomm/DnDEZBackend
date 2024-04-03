@@ -1,6 +1,8 @@
 ﻿using DnDEZBackend.Models;
 using DnDEZBackend.Models.DALs;
 using DnDEZBackend.Models.DTOs;
+using DnDEZBackend.Models.DTOs.CharacterDTOs;
+using DnDEZBackend.Models.DTOs.DnDDTOs;
 using DnDEZBackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +25,51 @@ namespace DnDEZBackEnd.Controllers
             };
         }
 
+        static async Task<ClassDTO> convertClassDTO(Class c)
+        {
+            return new ClassDTO
+            {
+                index = c.index,
+                name = c.name,
+                proficiency = await convertProficiencyDTO(c.proficiency_choices[0]),
+                saving_Throws = c.saving_throws
+            };
+        }
+
+        static async Task<ProficiencyDTO> convertProficiencyDTO(Proficiency_Choices proficiencies)
+        {
+            List<SkillDTO> classSkills = new List<SkillDTO>();
+            foreach(Option o in proficiencies.from.options)
+            {
+                classSkills.Add(convertSkillDTO(await DnDStatsDAL.getSkill(o.item.index.Substring(6))));
+            }
+
+            return new ProficiencyDTO
+            {
+                choose = proficiencies.choose,
+                choices = classSkills
+            };
+        }
+
+        static SkillDTO convertSkillDTO(DnDSkill s)
+        {
+            return new SkillDTO
+            {
+                index = s.index,
+                name = s.name,
+                score = convertAbilityDTO(s.ability_score)
+            };
+        }
+
+        static AbilityScoreDTO convertAbilityDTO(DnDEZBackend.Models.Ability_Score a)
+        {
+            return new AbilityScoreDTO
+            {
+                index = a.index,
+                name = a.name
+            };
+        }
+
         [HttpGet("Race")]
         public async Task<IActionResult> getRaceList()
         {
@@ -40,11 +87,12 @@ namespace DnDEZBackEnd.Controllers
         [HttpGet("Class")]
         public async Task<IActionResult> getClassList()
         {
-            DnDBasicObject result = await DnDClassDAL.getAllClasses()!;
-            List<string> result2 = new List<string>();
-            foreach(Result r in result.Results)
+            DnDBasicObject response = await DnDClassDAL.getAllClasses()!;
+            List<Result> result = response.Results.ToList();
+            List<ClassDTO> result2 = new List<ClassDTO>();
+            foreach(Result r in result)
             {
-                result2.Add(r.Index);
+                result2.Add(await convertClassDTO(await DnDClassDAL.getClass(r.Index)!));
             }
             return Ok(result2);
         }

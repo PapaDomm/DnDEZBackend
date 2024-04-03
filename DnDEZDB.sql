@@ -43,6 +43,10 @@ CREATE TABLE [Character](
 	Race NVARCHAR(10) NOT NULL,
 	Class NVARCHAR(9) NOT NULL,
 	[Level] INT NOT NULL,
+	ProfBonus INT NOT NULL,
+	Initiative INT NOT NULL,
+	Speed INT NOT NULL,
+	Alignment NVARCHAR(15) NOT NULL,
 	ImageId INT,
 	Active BIT NOT NULL DEFAULT '1',
 
@@ -57,7 +61,10 @@ CREATE TABLE [Character](
 	--Check
 	CONSTRAINT character_race_ck CHECK (Race in ('dragonborn', 'dwarf', 'elf', 'gnome', 'half-elf', 'half-orc', 'halfling', 'human', 'tiefling')),
 	CONSTRAINT character_class_ck CHECK (Class in ('barbarian', 'bard', 'cleric', 'druid', 'fighter', 'monk', 'paladin', 'ranger', 'rogue', 'sorcerer', 'warlock', 'wizard')),
-	CONSTRAINT character_level_ck CHECK ([Level] >= 1 AND [Level] <= 20)
+	CONSTRAINT character_level_ck CHECK ([Level] >= 1 AND [Level] <= 20),
+	CONSTRAINT character_profbonus_ck CHECK (ProfBonus >= 2 AND ProfBonus <= 6),
+	CONSTRAINT character_initiative_ck CHECK (Initiative >= -5 AND Initiative <= 5),
+	CONSTRAINT character_alignment_ck CHECK (Alignment in ('Chaotic Evil', 'Chaotic Good', 'Chaotic Neutral', 'Lawful Evil', 'Lawful Good', 'Lawful Neutral', 'Neutral', 'Neutral Evil', 'Neutral Good'))
 );
 
 CREATE TABLE Ability_Scores(
@@ -90,6 +97,59 @@ CREATE TABLE Char_Ability_Scores(
 	CONSTRAINT charabilityscores_value_ck CHECK ([Value] >= 1 AND [Value] <= 20)
 );
 
+CREATE TABLE Skills(
+	[Index] NVARCHAR(15) NOT NULL,
+	[Name] NVARCHAR(15) NOT NULL,
+	AbilityIndex NVARCHAR(3) NOT NULL,
+
+	--Constraints
+	--Primary Key
+	CONSTRAINT skills_index_pk PRIMARY KEY ([Index]),
+
+	--Foreign Key
+	CONSTRAINT skills_abilityindex_fk FOREIGN KEY (AbilityIndex) REFERENCES Ability_Scores([Index]),
+
+	--Check
+	CONSTRAINT skills_index_ck CHECK ([Index] in ('acrobatics', 'animal-handling', 'arcana', 'athletics', 'deception', 'history', 'insight', 'intimidation', 'investigation', 'medicine', 'nature', 'perception', 'performance', 'persuasion', 'religion', 'sleight-of-hand', 'stealth', 'survival')),
+	CONSTRAINT skills_name_ck CHECK ([Name] in ('Acrobatics', 'Animal Handling', 'Arcana', 'Athletics', 'Deception', 'History', 'Insight', 'Intimidation', 'Investigation', 'Medicine', 'Nature', 'Perception', 'Performance', 'Persuasion', 'Religion', 'Sleight of Hand', 'Stealth', 'Survival'))
+);
+
+CREATE TABLE Char_Skills(
+	CharacterId INT,
+	[Index] NVARCHAR(15),
+	[Value] INT NOT NULL,
+	Proficient BIT DEFAULT '0' NOT NULL,
+
+	--Constraints
+	--Primary Key
+	CONSTRAINT charskills_charskillsid_pk PRIMARY KEY (CharacterId, [Index]),
+
+	--Foreign Key
+	CONSTRAINT charskills_characterid_fk FOREIGN KEY (CharacterId) REFERENCES [Character](CharacterId),
+	CONSTRAINT charskills_index_fk FOREIGN KEY ([Index]) REFERENCES Skills([Index]),
+
+	--Check
+	CONSTRAINT charskills_value_ck CHECK ([Value] >= -5 AND [Value] <= 5)
+);
+
+CREATE TABLE Saving_Throws(
+	CharacterId INT,
+	[Index] NVARCHAR(3),
+	[Value] INT NOT NULL,
+	Proficient BIT DEFAULT '0' NOT NULL,
+
+	--Constraints
+	--Primary Key
+	CONSTRAINT savingthrows_savingthrowsid_pk PRIMARY KEY (CharacterId, [Index]),
+
+	--Foreign Key
+	CONSTRAINT savingthrows_characterid_fk FOREIGN KEY (CharacterId) REFERENCES [Character](CharacterId),
+	CONSTRAINT savingthrows_index_fk FOREIGN KEY ([Index]) REFERENCES Ability_Scores([Index]),
+
+	--Check
+	CONSTRAINT savingthrows_value_ck CHECK ([Value] >= -5 AND [Value] <= 5)
+);
+
 INSERT INTO Images 
 	(ImagePath)
 VALUES
@@ -106,6 +166,27 @@ VALUES
 	('wis', 'Wis'),
 	('cha', 'Cha')
 
+INSERT INTO Skills
+	([Index], [Name], AbilityIndex)
+VALUES
+	('acrobatics', 'Acrobatics', 'dex'),
+	('animal-handling', 'Animal Handling', 'wis'),
+	('arcana', 'Arcana', 'int'),
+	('athletics', 'Athletics', 'str'),
+	('deception', 'Deception', 'cha'),
+	('history', 'History', 'int'),
+	('insight', 'Insight', 'wis'),
+	('intimidation', 'Intimidation', 'cha'),
+	('investigation', 'Investigation', 'int'),
+	('medicine', 'Medicine', 'wis'),
+	('nature', 'Nature', 'int'),
+	('perception', 'Perception', 'wis'),
+	('performance', 'Performance', 'cha'),
+	('persuasion', 'Persuasion', 'cha'),
+	('religion', 'Religion', 'int'),
+	('sleight-of-hand', 'Sleight of Hand', 'dex'),
+	('stealth', 'Stealth', 'dex'),
+	('survival', 'Survival', 'wis')
 
 --Test Data
 INSERT INTO [Users]
