@@ -35,6 +35,12 @@ namespace DnDEZBackEnd.Controllers
                 Initiative = c.Initiative,
                 Speed = c.Speed,
                 Alignment = c.Alignment,
+                Personality = c.Personality,
+                Ideals = c.Ideals,
+                Bonds = c.Bonds,
+                Flaws = c.Flaws,
+                HitDie = c.HitDie,
+                Hp = c.Hp,
                 Image = convertImageDTO(c.Image),
                 CharAbilityScores = c.CharAbilityScores.Select(a => convertAbilityDTO(a)).ToList(),
                 SavingThrows = c.SavingThrows.Select(t => converSavingThrowDTO(t)).ToList(),
@@ -127,6 +133,12 @@ namespace DnDEZBackEnd.Controllers
             newCharacter.Initiative = c.Initiative;
             newCharacter.Speed = c.Speed;
             newCharacter.Alignment = c.Alignment;
+            newCharacter.Personality = c.Personality;
+            newCharacter.Ideals = c.Ideals;
+            newCharacter.Bonds = c.Bonds;
+            newCharacter.Flaws = c.Flaws;
+            newCharacter.HitDie = c.HitDie;
+            newCharacter.Hp = c.Hp;
             newCharacter.Active = true;
 
             string charabilitysfromform = c.CharAbilityScores;
@@ -255,6 +267,36 @@ namespace DnDEZBackEnd.Controllers
                 updateCharacter.Alignment = c.Alignment;
             }
 
+            if(c.Personality != null)
+            {
+                updateCharacter.Personality = c.Personality;
+            }
+
+            if(c.Ideals != null)
+            {
+                updateCharacter.Ideals = c.Ideals;
+            }
+
+            if(c.Bonds != null)
+            {
+                updateCharacter.Bonds = c.Bonds;
+            }
+
+            if(c.Flaws != null)
+            {
+                updateCharacter.Flaws = c.Flaws;
+            }
+
+            if(c.HitDie != null)
+            {
+                updateCharacter.HitDie = c.HitDie;
+            }
+
+            if(c.Hp != null)
+            {
+                updateCharacter.Hp = c.Hp;
+            }
+
             if (c.Image != null)
             {
                 Image newImage = uploader.getImage(c.Image, "Characters");
@@ -327,6 +369,14 @@ namespace DnDEZBackEnd.Controllers
             }
 
             result.Active = false;
+
+            if (result.Image != null && System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), result.Image.ImagePath)) && result.Image.ImagePath != "Images\\Characters\\defaultCharacterImage.png")
+            {
+                System.IO.File.Delete(Path.Combine(Directory.GetCurrentDirectory(), result.Image.ImagePath));
+                dbContext.Images.Remove(result.Image);
+            }
+            result.ImageId = 102;
+            result.Image = dbContext.Images.Find(result.ImageId);
 
             dbContext.Characters.Update(result);
             dbContext.SaveChanges();

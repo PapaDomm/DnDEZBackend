@@ -47,6 +47,12 @@ CREATE TABLE [Character](
 	Initiative INT NOT NULL,
 	Speed INT NOT NULL,
 	Alignment NVARCHAR(15) NOT NULL,
+	Personality NVARCHAR(500),
+	Ideals NVARCHAR(500),
+	Bonds NVARCHAR(500),
+	Flaws NVARCHAR(500),
+	HitDie INT NOT NULL,
+	HP INT NOT NULL,
 	ImageId INT,
 	Active BIT NOT NULL DEFAULT '1',
 
@@ -127,9 +133,6 @@ CREATE TABLE Char_Skills(
 	--Foreign Key
 	CONSTRAINT charskills_characterid_fk FOREIGN KEY (CharacterId) REFERENCES [Character](CharacterId),
 	CONSTRAINT charskills_index_fk FOREIGN KEY ([Index]) REFERENCES Skills([Index]),
-
-	--Check
-	CONSTRAINT charskills_value_ck CHECK ([Value] >= -5 AND [Value] <= 5)
 );
 
 CREATE TABLE Saving_Throws(
@@ -145,9 +148,6 @@ CREATE TABLE Saving_Throws(
 	--Foreign Key
 	CONSTRAINT savingthrows_characterid_fk FOREIGN KEY (CharacterId) REFERENCES [Character](CharacterId),
 	CONSTRAINT savingthrows_index_fk FOREIGN KEY ([Index]) REFERENCES Ability_Scores([Index]),
-
-	--Check
-	CONSTRAINT savingthrows_value_ck CHECK ([Value] >= -5 AND [Value] <= 5)
 );
 
 INSERT INTO Images 
@@ -188,41 +188,6 @@ VALUES
 	('stealth', 'Stealth', 'dex'),
 	('survival', 'Survival', 'wis')
 
---Test Data
-INSERT INTO [Users]
-		(FirstName, LastName, UserName, [Password])
-VALUES
-	('Eli', 'Reid', 'hajile7', '12345'),
-	('Dominic', 'Nutaitis', 'PapaDomm', '12345'),
-	('Ethan', 'Thomas', 'EthanChrist', '12345')
-
-
-
-INSERT INTO [Character]
-	(UserId, [Name], Race, Class, [Level])
-VALUES
-	(101, 'Kreiger', 'gnome', 'wizard', 5),
-	(102, 'Roland', 'half-orc', 'barbarian', 1),
-	(103, 'EthanChrist', 'dragonborn', 'paladin', 20)
-
-INSERT INTO Char_Ability_Scores
-	(CharacterId, [Index], [Value])
-VALUES
-	(101, 'str', 10),
-	(101, 'dex', 10),
-	(101, 'con', 8),
-	(101, 'int', 18),
-	(101, 'wis', 8),
-	(101, 'cha', 16),
-
-	(102, 'str', 4),
-	(102, 'dex', 4),
-	(102, 'con', 4),
-	(102, 'int', 8),
-	(102, 'wis', 2),
-	(102, 'cha', 20)
-
-
 select * from Users
 
 select * from Images
@@ -230,3 +195,5 @@ select * from Images
 select * from [Character]
 
 select * from Char_Ability_Scores
+
+select * from Char_Skills

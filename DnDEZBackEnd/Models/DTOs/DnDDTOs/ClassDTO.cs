@@ -4,6 +4,8 @@
     {
         public string index { get; set; }
         public string name { get; set; }
+
+        public int hit_die { get; set; }
         public ProficiencyDTO proficiency { get; set; }
         public Saving_Throws[] saving_Throws { get; set; }
     }

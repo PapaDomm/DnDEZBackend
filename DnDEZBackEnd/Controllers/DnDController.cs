@@ -32,6 +32,7 @@ namespace DnDEZBackEnd.Controllers
             {
                 index = c.index,
                 name = c.name,
+                hit_die = c.hit_die,
                 proficiency = await convertProficiencyDTO(c.proficiency_choices[0]),
                 saving_Throws = c.saving_throws
             };
@@ -71,6 +72,16 @@ namespace DnDEZBackEnd.Controllers
             };
         }
 
+        static DBSkillDTO convertDBSkillDTO(Skill s)
+        {
+            return new DBSkillDTO
+            {
+                Index = s.Index,
+                Name = s.Name,
+                AbilityIndex = s.AbilityIndex
+            };
+        }
+
         [HttpGet("Race")]
         public async Task<IActionResult> getRaceList()
         {
@@ -107,6 +118,27 @@ namespace DnDEZBackEnd.Controllers
             foreach (Result r in result)
             {
                 result2.Add(r.Name);
+            }
+            return Ok(result2);
+        }
+
+        [HttpGet("Skills")]
+        public IActionResult getAllSkills()
+        {
+            List<DBSkillDTO> result = dbContext.Skills.Select(s => convertDBSkillDTO(s)).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("Rules")]
+        public async Task<IActionResult> getAllRules()
+        {
+            DnDBasicObject response = await DnDStatsDAL.getAllRules()!;
+            List<Result> result = response.Results.ToList();
+            List<DnDRule> result2 = new List<DnDRule>();
+            foreach (Result r in result)
+            {
+                result2.Add(await DnDStatsDAL.getRule(r.Index)!);
             }
             return Ok(result2);
         }

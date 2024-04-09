@@ -25,6 +25,18 @@ public partial class Character
 
     public string Alignment { get; set; } = null!;
 
+    public string? Personality { get; set; }
+
+    public string? Ideals { get; set; }
+
+    public string? Bonds { get; set; }
+
+    public string? Flaws { get; set; }
+
+    public int HitDie { get; set; }
+
+    public int Hp { get; set; }
+
     public int? ImageId { get; set; }
 
     public bool? Active { get; set; }

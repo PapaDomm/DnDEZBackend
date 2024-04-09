@@ -19,6 +19,18 @@
 
         public string Alignment { get; set; } = null!;
 
+        public string? Personality { get; set; }
+
+        public string? Ideals { get; set; }
+
+        public string? Bonds { get; set; }
+
+        public string? Flaws { get; set; }
+
+        public int HitDie { get; set; }
+
+        public int Hp { get; set; }
+
         public string CharAbilityScores { get; set; } = null!;
 
         public string CharSkillScores { get; set; } = null!;

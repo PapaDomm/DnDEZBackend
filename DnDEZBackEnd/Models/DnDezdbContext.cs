@@ -102,8 +102,13 @@ public partial class DnDezdbContext : DbContext
                 .IsRequired()
                 .HasDefaultValueSql("('1')");
             entity.Property(e => e.Alignment).HasMaxLength(15);
+            entity.Property(e => e.Bonds).HasMaxLength(500);
             entity.Property(e => e.Class).HasMaxLength(9);
+            entity.Property(e => e.Flaws).HasMaxLength(500);
+            entity.Property(e => e.Hp).HasColumnName("HP");
+            entity.Property(e => e.Ideals).HasMaxLength(500);
             entity.Property(e => e.Name).HasMaxLength(100);
+            entity.Property(e => e.Personality).HasMaxLength(500);
             entity.Property(e => e.Race).HasMaxLength(10);
 
             entity.HasOne(d => d.Image).WithMany(p => p.Characters)

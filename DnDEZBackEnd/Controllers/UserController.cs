@@ -197,6 +197,15 @@ namespace DnDEZBackend.Controllers
 
             result.Active = false;
 
+            if (result.Image != null && System.IO.File.Exists(Path.Combine(Directory.GetCurrentDirectory(), result.Image.ImagePath)) && result.Image.ImagePath != "Images\\Users\\defaultProfilePic.png")
+            {
+                System.IO.File.Delete(Path.Combine(Directory.GetCurrentDirectory(), result.Image.ImagePath));
+                dbContext.Images.Remove(result.Image);
+            }
+
+            result.ImageId = 101;
+            result.Image = dbContext.Images.Find(result.ImageId);
+
             dbContext.Users.Update(result);
             dbContext.SaveChanges();
 
