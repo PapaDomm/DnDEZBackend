@@ -3,6 +3,7 @@ using DnDEZBackend.Models.DTOs;
 using DnDEZBackend.Models.DTOs.CharacterDTOs;
 using DnDEZBackend.Models.DTOs.StatsDTOs;
 using DnDEZBackend.Models.Public_Classes;
+using DnDEZBackend.Models.SQLObjects;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

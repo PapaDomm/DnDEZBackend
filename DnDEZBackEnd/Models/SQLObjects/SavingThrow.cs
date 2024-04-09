@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DnDEZBackend.Models;
+namespace DnDEZBackend.Models.SQLObjects;
 
 public partial class SavingThrow
 {

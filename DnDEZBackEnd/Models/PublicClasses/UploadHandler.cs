@@ -1,4 +1,6 @@
-﻿namespace DnDEZBackend.Models.Public_Classes
+﻿using DnDEZBackend.Models.SQLObjects;
+
+namespace DnDEZBackend.Models.Public_Classes
 {
     public class UploadHandler
     {

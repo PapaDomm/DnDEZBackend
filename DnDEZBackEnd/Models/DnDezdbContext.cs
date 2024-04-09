@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DnDEZBackend.Models.SQLObjects;
 using DnDEZBackEnd.Models.Public_Classes;
 using Microsoft.EntityFrameworkCore;
 

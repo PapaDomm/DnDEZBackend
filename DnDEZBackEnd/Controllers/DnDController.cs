@@ -3,6 +3,7 @@ using DnDEZBackend.Models.DALs;
 using DnDEZBackend.Models.DTOs.CharacterDTOs;
 using DnDEZBackend.Models.DTOs.DnDDTOs;
 using DnDEZBackend.Models.DTOs.StatsDTOs;
+using DnDEZBackend.Models.SQLObjects;
 using DnDEZBackEnd.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
