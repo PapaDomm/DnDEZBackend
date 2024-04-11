@@ -154,11 +154,11 @@ namespace DnDEZBackEnd.Controllers
                     newCharacter.ImageId = newImage.ImageId;
                     newCharacter.Image = dbContext.Images.Find(newCharacter.ImageId);
                 }
-            }
-            else
-            {
-                newCharacter.ImageId = 102;
-                newCharacter.Image = dbContext.Images.Find(newCharacter.ImageId);
+                else
+                {
+                    newCharacter.ImageId = 102;
+                    newCharacter.Image = dbContext.Images.Find(newCharacter.ImageId);
+                }
             }
 
             List<CharAbilityScoreDTO> newCharAbilityScores = JsonConvert.DeserializeObject<List<CharAbilityScoreDTO>>(charabilitysfromform).ToList();

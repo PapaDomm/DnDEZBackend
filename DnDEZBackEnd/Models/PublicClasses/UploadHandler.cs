@@ -7,7 +7,7 @@ namespace DnDEZBackend.Models.Public_Classes
         private DnDezdbContext dbContext = new DnDezdbContext();
         public Image getImage(IFormFile file, string folderName)
         {
-            string[] validExtensions = [".jpg", ".png", ".jpeg", ".gif", ".webp", ".avif", ".svg"];
+            string[] validExtensions = [".jpg", ".png", ".jpeg", ".gif", ".webp", ".avif", ".svg", ".jfif"];
             string FileExtension = Path.GetExtension(file.FileName);
 
             if(!validExtensions.Contains(FileExtension))
